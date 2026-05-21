@@ -24,6 +24,10 @@ async function run() {
     await client.connect();
     const db = client.db("driverfleetDB")
     const carCollection = db.collection("cars");
+    app.get("/car", async (req, res) => {
+        const result = await carCollection.find().toArray();
+        res.json(result);
+    })
 
 
     app.post("/car", async (req, res) => {

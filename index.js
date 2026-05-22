@@ -8,6 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { object } = require("better-auth");
 const uri = process.env.MONGODB_URI;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -39,6 +40,22 @@ async function run() {
     app.get("/car/:id", async (req, res) =>{
         const {id} = req.params;
         const result = await carCollection.findOne({_id: new ObjectId(id)});
+        res.json(result);
+    })
+    app.patch("/car/:id", async (req, res) => {
+        const {id} = req.params;
+        const updatedFields = req.body;
+        const filter = {_id: new ObjectId(id)};
+        const updatedInfo = {
+            $set: updatedFields
+        } ;
+        const result = await carCollection.updateOne(filter, updatedInfo);
+        res.json(result);
+    })
+    app.delete("/car/:id", async (req, res) => {
+        const {id} = req.params;
+        const deletItem = {_id: new ObjectId(id)};
+        const result = await carCollection.deleteOne(deletItem);
         res.json(result);
     })
     await client.db("driverfleetDB").command({ ping: 1 });

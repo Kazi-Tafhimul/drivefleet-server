@@ -26,7 +26,15 @@ async function run() {
     const db = client.db("driverfleetDB")
     const carCollection = db.collection("cars");
     app.get("/car", async (req, res) => {
-        const result = await carCollection.find().toArray();
+        const {search, type} = req.query;
+        let query = {};
+        if(search){
+            query.carName = {$regex: search, $options: "i"};
+        }
+        if (type && type !== "All") {
+            query.carType = type;
+        }
+        const result = await carCollection.find(query).toArray();
         res.json(result);
     })
 
@@ -68,6 +76,13 @@ async function run() {
 
         }
         const result = await bookingCollection.insertOne(bookingData);
+        await carCollection.updateOne(
+            {_id:bookingData.carId},
+            {
+                $inc: { bookingCount: 1 }
+            }
+        )
+        res.json(result);
     })
     app.get("/my-bookings", async (req, res) => {
         const {email} = req.query;

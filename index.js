@@ -34,6 +34,8 @@ async function run() {
     app.post("/car", async (req, res) => {
         const carData = req.body;
         console.log(carData)
+        carData.availability = "available";
+        carData.bookingCount = 0;
         const result = await carCollection.insertOne(carData);
         res.json(result);
     })
@@ -56,6 +58,21 @@ async function run() {
         const {id} = req.params;
         const deletItem = {_id: new ObjectId(id)};
         const result = await carCollection.deleteOne(deletItem);
+        res.json(result);
+    })
+    const bookingCollection = db.collection("bookings");
+    app.post("/booking", async (req, res) => {
+        const bookingData = req.body;
+        if(bookingData.carId){
+            bookingData.carId = new ObjectId(bookingData.carId);
+
+        }
+        const result = await bookingCollection.insertOne(bookingData);
+    })
+    app.get("/my-bookings", async (req, res) => {
+        const {email} = req.query;
+        const query = {userEmail: email};
+        const result = await bookingCollection.find(query).toArray();
         res.json(result);
     })
     await client.db("driverfleetDB").command({ ping: 1 });
